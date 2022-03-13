@@ -16,31 +16,31 @@ func main() {
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
 
-	q, err := ch.QueueDeclare(
-		"task_queue",
+	err = ch.ExchangeDeclare(
+		"logs",
+		"fanout",
 		true,
 		false,
 		false,
 		false,
 		nil,
 		)
-	failOnError(err, "Failed to declare a queue")
+	failOnError(err, "Failed to declare an publisher")
 
 	body := bodyFrom(os.Args)
+
 	err = ch.Publish(
+		"logs",
 		"",
-		q.Name,
 		false,
 		false,
 		amqp.Publishing{
-			DeliveryMode: amqp.Persistent,
 			ContentType: "text/plain",
 			Body: []byte(body),
 		})
-	failOnError(err, "Failed to publish message")
+	failOnError(err, "Failed to publish a message")
+
 	log.Printf(" [x] Sent %s", body)
-
-
 }
 
 func bodyFrom(args []string) string  {
